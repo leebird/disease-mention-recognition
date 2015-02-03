@@ -14,7 +14,14 @@ avg / total       0.89      0.81      0.85      1888
 Mention level evaluation on dev set
 ```
 all entities: 781
+
+Exact match:
 precision: 0.82
 recall: 0.80
 f-score: 0.81
+
+Same-ending match:
+precision: 1.0
+recall: 0.90
+f-score: 0.95
 ```
