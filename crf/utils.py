@@ -1,23 +1,6 @@
 from itertools import chain
-import nltk
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
-import sklearn
-import pycrfsuite
-
-
-def get_sentences(sentence_file):
-    handler = open(sentence_file, 'r')
-
-    sentence = []
-    for line in handler:
-        line = line.strip()
-        if len(line) == 0:
-            yield sentence
-            sentence = []
-        else:
-            tokens = tuple(line.split('\t'))
-            sentence.append(tokens)
 
 
 def word2features(sent, i):
@@ -32,9 +15,10 @@ def word2features(sent, i):
         'word.start.isupper=%s' % word[0].isupper(),
         'word.istitle=%s' % word.istitle(),
         'word.isdigit=%s' % word.isdigit(),
+        'word.isfirst=%s' % (i == 0),
         'postag=' + postag,
         'postag[:2]=' + postag[:2],
-        ]
+    ]
 
     if i > 0:
         word1 = sent[i - 1][0]
@@ -51,7 +35,7 @@ def word2features(sent, i):
             '<2:word.isupper=%s' % word1.isupper(),
             '<2:postag=' + postag1,
             '<2:postag[:2]=' + postag1[:2],
-            ])
+        ])
     else:
         features.append('BOS')
 
@@ -78,8 +62,7 @@ def word2features(sent, i):
             '<2:word.isupper=%s' % word2.isupper(),
             '<2:postag=' + postag2,
             '<2:postag[:2]=' + postag2[:2],
-            ])
-
+        ])
 
     if i < len(sent) - 1:
         word1 = sent[i + 1][0]
@@ -96,7 +79,7 @@ def word2features(sent, i):
             '>2:word.isupper=%s' % word1.isupper(),
             '>2:postag=' + postag1,
             '>2:postag[:2]=' + postag1[:2],
-            ])
+        ])
 
     else:
         features.append('EOS')
@@ -124,7 +107,7 @@ def word2features(sent, i):
             '>2:word.isupper=%s' % word2.isupper(),
             '>2:postag=' + postag2,
             '>2:postag[:2]=' + postag2[:2],
-            ])
+        ])
 
     return features
 
@@ -141,26 +124,38 @@ def sent2tokens(sent):
     return [token for token, postag, label in sent]
 
 
-train_sents = list(get_sentences('corpus/BIO/train.bio'))
+def get_sentences(sentence_file):
+    with open(sentence_file, 'r') as handler:
+        sentence = []
+        for line in handler:
+            line = line.strip()
+            if len(line) == 0:
+                yield sentence
+                sentence = []
+            else:
+                tokens = tuple(line.split('\t'))
+                sentence.append(tokens)
 
-# print(sent2features(train_sents[0])[0])
 
-X_train = [sent2features(s) for s in train_sents]
-y_train = [sent2labels(s) for s in train_sents]
+def bio_classification_report(y_true, y_pred):
+    """
+    Classification report for a list of BIO-encoded sequences.
+    It computes token-level metrics and discards "O" labels.
 
-trainer = pycrfsuite.Trainer(verbose=False)
+    Note that it requires scikit-learn 0.15+ (or a version from github master)
+    to calculate averages properly!
+    """
+    lb = LabelBinarizer()
+    y_true_combined = lb.fit_transform(list(chain.from_iterable(y_true)))
+    y_pred_combined = lb.transform(list(chain.from_iterable(y_pred)))
 
-for xseq, yseq in zip(X_train, y_train):
-    trainer.append(xseq, yseq)
+    tagset = set(lb.classes_) - {'O'}
+    tagset = sorted(tagset, key=lambda tag: tag.split('-', 1)[::-1])
+    class_indices = {cls: idx for idx, cls in enumerate(lb.classes_)}
 
-trainer.set_params({
-    'c1': 1.0,  # coefficient for L1 penalty
-    'c2': 1e-3,  # coefficient for L2 penalty
-    'max_iterations': 50,  # stop earlier
-
-    # include transitions that are possible, but not observed
-    'feature.possible_transitions': True
-})
-
-trainer.train('ncbi_disease_train.model')
-
+    return classification_report(
+        y_true_combined,
+        y_pred_combined,
+        labels=[class_indices[cls] for cls in tagset],
+        target_names=tagset,
+    )
