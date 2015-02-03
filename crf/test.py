@@ -1,5 +1,5 @@
 import pycrfsuite
-from .utils import sent2features, sent2labels, bio_classification_report, get_sentences
+from .utils import sent2features, sent2labels, bio_classification_report, get_sentences, sent2tokens
 import sys
 
 def print_transitions(trans_features):
@@ -22,24 +22,34 @@ if __name__ == '__main__':
     tagger = pycrfsuite.Tagger()
     tagger.open(model_file)
 
-    dev_sents = list(get_sentences(bio_file))
-    X_test = [sent2features(s) for s in dev_sents]
-    y_test = [sent2labels(s) for s in dev_sents]
+    test_sents = list(get_sentences(bio_file))
+    X_test = [sent2features(s) for s in test_sents]
+    y_test = [sent2labels(s) for s in test_sents]
+    token_test = [sent2tokens(s) for s in test_sents]
 
     y_pred = [tagger.tag(xseq) for xseq in X_test]
     print(bio_classification_report(y_test, y_pred))
 
-    from collections import Counter
-    info = tagger.info()
 
-    print("Top likely transitions:")
-    print_transitions(Counter(info.transitions).most_common(15))
+    result_file = 'data/result/result.bio'
+    handler = open(result_file, 'w')
+    for tokens, labels in zip(token_test, y_pred):
+        for token, label in zip(tokens, labels):
+            #print(token, label)
+            handler.write(token + '\t' + label + '\n')
+        handler.write('\n')
 
-    print("\nTop unlikely transitions:")
-    print_transitions(Counter(info.transitions).most_common()[-15:])
-
-    print("Top positive:")
-    print_state_features(Counter(info.state_features).most_common(20))
-
-    print("\nTop negative:")
-    print_state_features(Counter(info.state_features).most_common()[-20:])
+    # from collections import Counter
+    # info = tagger.info()
+    #
+    # print("Top likely transitions:")
+    # print_transitions(Counter(info.transitions).most_common(15))
+    #
+    # print("\nTop unlikely transitions:")
+    # print_transitions(Counter(info.transitions).most_common()[-15:])
+    #
+    # print("Top positive:")
+    # print_state_features(Counter(info.state_features).most_common(20))
+    #
+    # print("\nTop negative:")
+    # print_state_features(Counter(info.state_features).most_common()[-20:])

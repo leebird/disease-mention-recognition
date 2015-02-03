@@ -9,7 +9,6 @@ from nltk.tokenize import WordPunctTokenizer
 
 nltk.data.path = ['data']
 
-
 def ann_to_bio(corpus, bio_file):
 
     def get_bio_tag(index, entities):

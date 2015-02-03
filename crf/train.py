@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     train_sents = list(get_sentences(bio_file))
     
-    # print(sent2features(train_sents[0])[0])
+    print(sent2features(train_sents[0])[0])
     
     X_train = [sent2features(s) for s in train_sents]
     y_train = [sent2labels(s) for s in train_sents]
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         'max_iterations': 50,  # stop earlier
     
         # include transitions that are possible, but not observed
-        'feature.possible_transitions': True
+        'feature.possible_transitions': False
     })
     
     trainer.train(model_file)

@@ -1,18 +1,31 @@
 from itertools import chain
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.preprocessing import LabelBinarizer
+import leveldb
 
+atom_db = leveldb.LevelDB('data/atom_db')
+bigram_db = leveldb.LevelDB('data/bigram_db')
 
 def word2features(sent, i):
+    global atom_db, bigram_db
     word = sent[i][0]
     postag = sent[i][1]
+
+    try:
+        atom_db.Get(word.lower().encode('utf-8'))
+        in_db = True
+    except KeyError:
+        in_db = False
+    
     features = [
         'bias',
         'word.lower=' + word.lower(),
+        'word.in_db=%s' % in_db,
         'word[-3:]=' + word[-3:],
         'word[-2:]=' + word[-2:],
+        'word[+3:]=' + word[0:3],
+        'word[+2:]=' + word[0:2],
         'word.isupper=%s' % word.isupper(),
-        'word.start.isupper=%s' % word[0].isupper(),
         'word.istitle=%s' % word.istitle(),
         'word.isdigit=%s' % word.isdigit(),
         'word.isfirst=%s' % (i == 0),
@@ -44,6 +57,14 @@ def word2features(sent, i):
         postag1 = sent[i - 1][1]
         word2 = sent[i - 2][0]
         postag2 = sent[i - 2][1]
+        word2_word1 = word2.lower() + '|' + word1.lower()
+        
+        try:
+            bigram_db.Get(word2_word1.encode('utf-8'))
+            in_db = True
+        except KeyError:
+            in_db = False
+
         features.extend([
             '-2:word.lower=' + word2.lower(),
             '-2:word.istitle=%s' % word2.istitle(),
@@ -51,17 +72,16 @@ def word2features(sent, i):
             '-2:postag=' + postag2,
             '-2:postag[:2]=' + postag2[:2],
 
-            '<2:word.lower=' + word1.lower(),
-            '<2:word.istitle=%s' % word1.istitle(),
-            '<2:word.isupper=%s' % word1.isupper(),
-            '<2:postag=' + postag1,
-            '<2:postag[:2]=' + postag1[:2],
-
             '<2:word.lower=' + word2.lower(),
             '<2:word.istitle=%s' % word2.istitle(),
             '<2:word.isupper=%s' % word2.isupper(),
             '<2:postag=' + postag2,
             '<2:postag[:2]=' + postag2[:2],
+
+            'db_-2:word.lower|-1:word.lower=%s' % in_db,
+            '-2:word.lower|-1:word.lower=' + word2.lower() + '|' + word1.lower(),
+            '-2:postag|-1:postag=' + postag2 + '|' + postag1,
+            '-2:postag[:2]|-1:postag[:2]=' + postag2[:2] + '|' + postag1[:2],
         ])
 
     if i < len(sent) - 1:
@@ -80,7 +100,6 @@ def word2features(sent, i):
             '>2:postag=' + postag1,
             '>2:postag[:2]=' + postag1[:2],
         ])
-
     else:
         features.append('EOS')
 
@@ -89,6 +108,15 @@ def word2features(sent, i):
         postag1 = sent[i + 1][1]
         word2 = sent[i + 2][0]
         postag2 = sent[i + 2][1]
+
+        word1_word2 = word1.lower() + '|' + word2.lower()
+
+        try:
+            bigram_db.Get(word1_word2.encode('utf-8'))
+            in_db = True
+        except KeyError:
+            in_db = False
+        
         features.extend([
             '+2:word.lower=' + word2.lower(),
             '+2:word.istitle=%s' % word2.istitle(),
@@ -96,18 +124,27 @@ def word2features(sent, i):
             '+2:postag=' + postag2,
             '+2:postag[:2]=' + postag2[:2],
 
-            '>2:word.lower=' + word1.lower(),
-            '>2:word.istitle=%s' % word1.istitle(),
-            '>2:word.isupper=%s' % word1.isupper(),
-            '>2:postag=' + postag1,
-            '>2:postag[:2]=' + postag1[:2],
-
             '>2:word.lower=' + word2.lower(),
             '>2:word.istitle=%s' % word2.istitle(),
             '>2:word.isupper=%s' % word2.isupper(),
             '>2:postag=' + postag2,
             '>2:postag[:2]=' + postag2[:2],
+
+            'db_+1:word.lower|+2:word.lower=%s' % in_db,
+            '+1:word.lower|+2:word.lower=' + word1.lower() + '|' + word2.lower(),
+            '+1:postag|+2:postag=' + postag1 + '|' + postag2,
+            '+1:postag[:2]|+2:postag[:2]=' + postag1[:2] + '|' + postag2[:2],
         ])
+
+    # for j in range(i - 1, -1, -1):
+    # if sent[j][1].startswith('N'):
+    #         features.append('-1:noun.lower=' + sent[j][0].lower())
+    #         break
+    #
+    # for j in range(i, len(sent)):
+    #     if sent[j][1].startswith('N'):
+    #         features.append('+1:noun.lower=' + sent[j][0].lower())
+    #         break
 
     return features
 
