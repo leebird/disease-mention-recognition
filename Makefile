@@ -7,3 +7,6 @@ python -m crf.build_dict old/MEDIC/disease_names.txt data/atom_db data/bigram_db
 
 python -m crf.train corpus/BIO/train.bio model/model
 python -m crf.test corpus/BIO/development.bio model/model
+
+PYTHONPATH=../legonlp python -m crf.bio_to_ann
+PYTHONPATH=../legonlp python -m crf.evaluate data/result/user_test/ /data/result/gold_test/

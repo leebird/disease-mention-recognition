@@ -77,8 +77,8 @@ if __name__ == '__main__':
 
     bio_to_ann(bio_file, text_file, ann_file, tag_type)
 
-    bio_file = 'corpus/BIO/development.bio'
-    text_file = 'data/result/gold_dev.txt'
-    ann_file = 'data/result/gold_dev.ann'
+    bio_file = 'corpus/BIO/test.bio'
+    text_file = 'data/result/gold.txt'
+    ann_file = 'data/result/gold.ann'
 
     bio_to_ann(bio_file, text_file, ann_file, tag_type)

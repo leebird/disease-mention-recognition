@@ -69,7 +69,7 @@ class Evaluation(object):
             gold_anno = golden_data[pmid]
 
             for entity in gold_anno.entities:
-                if level == 'mention':
+                if level == 'mention' or level == 'ending':
                     golden_entities.add((pmid,
                                          entity.category,
                                          entity.start,
@@ -86,7 +86,13 @@ class Evaluation(object):
             user_anno = user_data[pmid]
 
             for entity in user_anno.entities:
-                if level == 'mention':
+                if level == 'ending':
+                    for gold_entity in golden_entities:
+                        if entity.end == gold_entity[3]:
+                            user_entities.add(gold_entity)
+                            break
+                            
+                elif level == 'mention':
                     user_entities.add((pmid,
                                          entity.category,
                                          entity.start,
@@ -104,4 +110,5 @@ class Evaluation(object):
 if __name__ == '__main__':
     user_data = sys.argv[1]
     gold_data = sys.argv[2]
+    # Evaluation.evaluate(user_data, gold_data, 'mention')
     Evaluation.evaluate(user_data, gold_data, 'mention')
