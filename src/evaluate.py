@@ -3,6 +3,7 @@ import sys
 
 class Evaluation(object):
     def __init__(self):
+        #TODO: integrate into Annotation
         pass
 
     @classmethod
@@ -13,7 +14,7 @@ class Evaluation(object):
                 return sentence.property.get('id')
 
     @classmethod
-    def calculate(cls, user_set, golden_set):
+    def calculate(cls, user_set, golden_set, level):
         golden_num = len(golden_set)
         tp = len(golden_set & user_set)
         fp = len(user_set - golden_set)
@@ -24,9 +25,12 @@ class Evaluation(object):
         fscore = 2 * precision * recall / (precision + recall)
 
         print('all entities:', golden_num)
-        print('precision:', precision)
-        print('recall:', recall)
-        print('f-score:', fscore)
+        # print('precision:', precision)
+        # print('recall:', recall)
+        # print('f-score:', fscore)
+
+        print("%-10s %-10s %-10s %10s" % ('level', 'precision', 'recall', 'f1-score'))
+        print("%-10s %-10.2f %-10.2f %10.2f" % (level, precision, recall, fscore))
 
         # print()
         # print('TP:')
@@ -47,15 +51,15 @@ class Evaluation(object):
         # print('FN:')
         # print('\n'.join(set([str(t[0]) for t in golden_set - user_set])))
 
-
     @classmethod
-    def evaluate(cls, user_data_path, golden_data_path, level):
-
+    def evaluate_folders(cls, user_data_path, golden_data_path, level):
         reader = AnnReader()
-
         user_data = reader.parse_folder(user_data_path, '.ann')
         golden_data = reader.parse_folder(golden_data_path, '.ann')
+        cls.evaluate(user_data, golden_data, level)
 
+    @classmethod
+    def evaluate(cls, user_data, golden_data, level):
         user_keys = set(user_data.keys())
         golden_keys = set(golden_data.keys())
         user_entities = set()
@@ -94,7 +98,11 @@ class Evaluation(object):
                             found = True
                             break
                     if not found:
-                        user_entities.add((pmid, entity.category, entity.start, entity.end, entity.text))
+                        user_entities.add((pmid,
+                                           entity.category, 
+                                           entity.start, 
+                                           entity.end, 
+                                           entity.text))
 
                 elif level == 'mention':
                     user_entities.add((pmid,
@@ -107,12 +115,12 @@ class Evaluation(object):
                     user_entities.add((pmid,
                                        entity.category,
                                        entity.text.lower()))
-
-        cls.calculate(user_entities, golden_entities)
+                    
+        cls.calculate(user_entities, golden_entities, level)
 
 
 if __name__ == '__main__':
     user_data = sys.argv[1]
     gold_data = sys.argv[2]
     # Evaluation.evaluate(user_data, gold_data, 'mention')
-    Evaluation.evaluate(user_data, gold_data, 'ending')
+    Evaluation.evaluate_folders(user_data, gold_data, 'ending')

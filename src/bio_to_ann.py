@@ -5,7 +5,6 @@ from annotation.utils import FileProcessor
 import os
 import sys
 
-
 def bio_to_ann(bio_lines, tag_type):
     # annotation
     annotation = Annotation()
@@ -24,9 +23,9 @@ def bio_to_ann(bio_lines, tag_type):
 
             fields = line.split('\t')
             token, label = fields[0], fields[-1]
-            annotation.text += ' ' + token
+            annotation.text += token + ' '
             if label != 'O':
-                annotation.add_entity(label, index + 1, index + 1 + len(token), token)
+                annotation.add_entity(label, index, index + len(token), token)
             index += 1 + len(token)
 
     elif tag_type == 'Disease':
@@ -45,19 +44,24 @@ def bio_to_ann(bio_lines, tag_type):
 
             fields = line.split('\t')
             token, label = fields[0], fields[-1]
-            annotation.text += ' ' + token
+            
+            # so that we can use index + len(token) for the token end
+            annotation.text += token + ' '
 
+            # index is the current position in text
             if label == 'B':
-                start = index + 1
-                end = index + 1 + len(token)
+                start = index
+                end = index + len(token)
             elif label == 'I':
-                end += 1 + len(token)
+                end = index + len(token)
             elif label == 'O' and start > -1:
                 annotation.add_entity('Disease', start, end, annotation.text[start:end])
                 start = -1
                 end = -1
 
             index += 1 + len(token)
+
+    annotation.text = annotation.text.strip()
     return annotation
 
 

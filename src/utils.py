@@ -73,9 +73,9 @@ def word2features(sent, i):
             '<2:postag[:2]': postag1[:2],
 
             'db_-1:word.lower|word.lower': in_db,
-            # '-1:word.lower|word.lower': word1_word,
-            # '-1:postag|postag': postag1 + '|' + postag,
-            # '-1:postag[:2]|postag[:2]': postag1[:2] + '|' + postag[:2],
+            '-1:word.lower|word.lower': word1_word,
+            '-1:postag|postag': postag1 + '|' + postag,
+            '-1:postag[:2]|postag[:2]': postag1[:2] + '|' + postag[:2],
         })
     else:
         features.update({'BOS': True})
@@ -138,9 +138,9 @@ def word2features(sent, i):
             '>2:postag[:2]': postag1[:2],
 
             'db_word.lower|+1:word.lower': in_db,
-            # 'word.lower|+1:word.lower': word_word1,
-            # 'postag|+1:postag': postag + '|' + postag1,
-            # 'postag[:2]|+1:postag[:2]': postag[:2] + '|' + postag1[:2],
+            'word.lower|+1:word.lower': word_word1,
+            'postag|+1:postag': postag + '|' + postag1,
+            'postag[:2]|+1:postag[:2]': postag[:2] + '|' + postag1[:2],
         })
     else:
         features.update({'EOS': True})

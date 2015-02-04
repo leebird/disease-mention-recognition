@@ -7,7 +7,6 @@ import os
 import sys
 from nltk.tokenize import WordPunctTokenizer
 
-nltk.data.path = ['data']
 
 def ann_to_bio(corpus, bio_file):
 
@@ -70,15 +69,27 @@ def ann_to_bio(corpus, bio_file):
 
     bio_file_handler.close()
 
-#TODO: accept command line args
-corpus_train = 'corpus/ann/train'
-corpus_test = 'corpus/ann/test'
-corpus_dev = 'corpus/ann/development'
+if __name__ == '__main__':
 
-bio_train = 'corpus/BIO/train.bio'
-bio_test = 'corpus/BIO/test.bio'
-bio_dev = 'corpus/BIO/development.bio'
+    nltk.data.path = ['data']
 
-ann_to_bio(corpus_train, bio_train)
-ann_to_bio(corpus_dev, bio_dev)
-ann_to_bio(corpus_test, bio_test)
+    if len(sys.argv) < 3:
+        print('specify ann folder and BIO file')
+        sys.exit(0)
+
+    ann_folder = sys.argv[1]
+    bio_file = sys.argv[2]
+
+    ann_to_bio(ann_folder, bio_file)
+
+    # corpus_train = 'corpus/ann/train'
+    # corpus_test = 'corpus/ann/test'
+    # corpus_dev = 'corpus/ann/development'
+    #
+    # bio_train = 'corpus/BIO/train.bio'
+    # bio_test = 'corpus/BIO/test.bio'
+    # bio_dev = 'corpus/BIO/development.bio'
+    #
+    # ann_to_bio(corpus_train, bio_train)
+    # ann_to_bio(corpus_dev, bio_dev)
+    # ann_to_bio(corpus_test, bio_test)
