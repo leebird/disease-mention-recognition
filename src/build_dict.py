@@ -1,3 +1,4 @@
+import gzip
 import nltk
 import nltk.data
 import os
@@ -20,7 +21,7 @@ if __name__ == '__main__':
 
     pattern = re.compile('[a-zA-Z]')
 
-    with open(dict_file, 'r') as handler:
+    with gzip.open(dict_file, 'rt', encoding='utf-8') as handler:
 
         atom_db = leveldb.LevelDB(db_atom_file)
         bigram_db = leveldb.LevelDB(db_bigram_file)
@@ -38,6 +39,7 @@ if __name__ == '__main__':
             if len(tokens) > 1:
                 bigrams = [tokens[i] + '|' + tokens[i + 1] for i in range(len(tokens) - 1)]
                 for bigram in bigrams:
+                    # if not encoded, TypeError: 'str' does not support the buffer interface
                     bigram_db.Put(bigram.encode('utf-8'), ''.encode('utf-8'))
             elif pattern.search(line) is not None:
                 atom_db.Put(line.encode('utf-8'), ''.encode('utf-8'))

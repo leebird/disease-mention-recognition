@@ -4,3 +4,4 @@ scikit-learn
 nltk
 python-crfsuite
 leveldb
+gensim

@@ -31,7 +31,7 @@ class Evaluation(object):
         # print()
         # print('TP:')
         # for t in sorted(user_set & golden_set, key=lambda a: a[0]):
-        #     print(t, relation_map[t])
+        # print(t, relation_map[t])
         #
         # print()
         # print('FP:')
@@ -80,35 +80,39 @@ class Evaluation(object):
                     golden_entities.add((pmid,
                                          entity.category,
                                          entity.text.lower()))
-                    
+
         for pmid in user_keys:
 
             user_anno = user_data[pmid]
 
             for entity in user_anno.entities:
                 if level == 'ending':
+                    found = False
                     for gold_entity in golden_entities:
                         if entity.end == gold_entity[3]:
                             user_entities.add(gold_entity)
+                            found = True
                             break
-                            
+                    if not found:
+                        user_entities.add((pmid, entity.category, entity.start, entity.end, entity.text))
+
                 elif level == 'mention':
                     user_entities.add((pmid,
-                                         entity.category,
-                                         entity.start,
-                                         entity.end,
-                                         entity.text))
+                                       entity.category,
+                                       entity.start,
+                                       entity.end,
+                                       entity.text))
 
                 elif level == 'abstract':
                     user_entities.add((pmid,
                                        entity.category,
                                        entity.text.lower()))
 
-
         cls.calculate(user_entities, golden_entities)
-        
+
+
 if __name__ == '__main__':
     user_data = sys.argv[1]
     gold_data = sys.argv[2]
     # Evaluation.evaluate(user_data, gold_data, 'mention')
-    Evaluation.evaluate(user_data, gold_data, 'mention')
+    Evaluation.evaluate(user_data, gold_data, 'ending')

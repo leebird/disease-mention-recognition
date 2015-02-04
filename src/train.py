@@ -12,12 +12,13 @@ if __name__ == '__main__':
 
     train_sents = list(get_sentences(bio_file))
     
-    print(sent2features(train_sents[0])[0])
+    # print(sent2features(train_sents[0]).items()[0])
+    # sys.exit()
     
     X_train = [sent2features(s) for s in train_sents]
     y_train = [sent2labels(s) for s in train_sents]
     
-    trainer = pycrfsuite.Trainer(verbose=False)
+    trainer = pycrfsuite.Trainer(verbose=True)
     
     for xseq, yseq in zip(X_train, y_train):
         trainer.append(xseq, yseq)
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     trainer.set_params({
         'c1': 1.0,  # coefficient for L1 penalty
         'c2': 1e-3,  # coefficient for L2 penalty
-        'max_iterations': 50,  # stop earlier
+        'max_iterations': 70,  # stop earlier
     
         # include transitions that are possible, but not observed
         'feature.possible_transitions': False

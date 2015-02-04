@@ -38,7 +38,8 @@ if __name__ == '__main__':
             #print(token, label)
             handler.write(token + '\t' + label + '\n')
         handler.write('\n')
-
+    
+    #TODO: also evaluate mention level
     # from collections import Counter
     # info = tagger.info()
     #

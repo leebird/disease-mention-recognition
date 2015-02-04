@@ -70,6 +70,7 @@ def ann_to_bio(corpus, bio_file):
 
     bio_file_handler.close()
 
+#TODO: accept command line args
 corpus_train = 'corpus/ann/train'
 corpus_test = 'corpus/ann/test'
 corpus_dev = 'corpus/ann/development'
