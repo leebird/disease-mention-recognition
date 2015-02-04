@@ -29,10 +29,12 @@ recall: 0.80
 f-score: 0.81
 
 Same-ending match:
-precision: 1.0
+precision: 0.91
 recall: 0.90
-f-score: 0.95
+f-score: 0.91
+
 ------------------
+
 TEST set:
 all entities: 955
 
@@ -42,7 +44,8 @@ recall: 0.76
 f-score: 0.80
 
 Same-ending match:
-precision: 1.0
+precision: 0.92
 recall: 0.83
-f-score: 0.91
+f-score: 0.87
+
 ```
