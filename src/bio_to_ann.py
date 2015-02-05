@@ -59,7 +59,7 @@ def bio_to_ann(bio_lines, tag_type):
                 start = -1
                 end = -1
 
-            index += 1 + len(token)
+            index += len(token) + 1
 
     annotation.text = annotation.text.strip()
     return annotation

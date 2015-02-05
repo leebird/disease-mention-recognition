@@ -40,13 +40,13 @@ class Evaluation(object):
         # print()
         # print('FP:')
         # for t in sorted(user_set - golden_set, key=lambda a: a[0]):
-        #     print(t, relation_map[t])
+        #     print(t)
         #
         # print()
         # print('FN:')
         # for t in sorted(golden_set - user_set, key=lambda a: a[0]):
         #     print(t)
-        #
+
         # print()
         # print('FN:')
         # print('\n'.join(set([str(t[0]) for t in golden_set - user_set])))
@@ -73,6 +73,10 @@ class Evaluation(object):
             gold_anno = golden_data[pmid]
 
             for entity in gold_anno.entities:
+                # TODO: remove this assignment
+                # NCBI corpus has several classes of disease mentions,
+                # change all of them to "Disease" for evaluation
+                entity.category = 'Disease'
                 if level == 'mention' or level == 'ending':
                     golden_entities.add((pmid,
                                          entity.category,
@@ -93,7 +97,8 @@ class Evaluation(object):
                 if level == 'ending':
                     found = False
                     for gold_entity in golden_entities:
-                        if entity.end == gold_entity[3]:
+                        if entity.end == gold_entity[3] and pmid == gold_entity[0]:
+                            # if entity has the same ending in the same document
                             user_entities.add(gold_entity)
                             found = True
                             break
@@ -115,7 +120,6 @@ class Evaluation(object):
                     user_entities.add((pmid,
                                        entity.category,
                                        entity.text.lower()))
-                    
         cls.calculate(user_entities, golden_entities, level)
 
 

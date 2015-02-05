@@ -1,6 +1,8 @@
 # disease-mention-recognition
 Corpus: http://annotation.dbi.udel.edu/text_mining/corpus/#/NCBI_disease/
 
+Run `source env/bin/activate before running the following command`
+
 Train a model:
 ```
 python -m src.train corpus/BIO/train.bio model/train.model
@@ -18,22 +20,20 @@ python -m src.tag corpus/ann/train/ model/train.model result/
 ```
 
 BIO labeling evaluation on dev and test set
-```
-DEV set      precision    recall  f1-score   support
 
-          B       0.84      0.83      0.84       791
-          I       0.91      0.82      0.86      1097
+DEV set   |   precision  |  recall | f1-score |  support |
+----------|--------------|---------|----------|----------|
+          B   |    0.84  |    0.83   |   0.84   |    791 |
+          I   |    0.91  |    0.82   |   0.86   |   1097 |
+avg / total   |    0.88  |    0.83   |   0.85   |   1888 |
 
-avg / total       0.88      0.83      0.85      1888
 
+TEST set  |   precision  |  recall | f1-score  | support |
+----------|--------------|---------|-----------|---------|
+          B    |   0.87  |    0.81 |     0.84  |     961 |
+          I    |   0.82  |    0.85 |     0.84  |    1087 |
+avg / total    |   0.85  |    0.83 |     0.84  |    2048 |
 
-TEST set     precision    recall  f1-score   support
-
-          B       0.87      0.81      0.84       961
-          I       0.82      0.85      0.84      1087
-
-avg / total       0.85      0.83      0.84      2048
-```
 
 Mention level evaluation on dev and test set
 ```

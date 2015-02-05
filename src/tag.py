@@ -48,8 +48,10 @@ def map_to_original(annotation, original_text):
         token_end_ori = index_ori + len(token)
         if index in entity_start_hash:
             entity_start_hash[index].start = index_ori
-        elif token_end in entity_end_hash:
-            entity_end_hash[token_end].end = token_end_ori
+        if token_end in entity_end_hash:
+            entity = entity_end_hash[token_end]
+            entity.end = token_end_ori
+            entity.text = original_text[entity.start:entity.end]
 
         index = token_end
         index_ori = token_end_ori
@@ -92,6 +94,7 @@ def recognize(filepath):
 
     return annotation
 
+
 if __name__ == '__main__':
 
     if len(sys.argv) < 4:
@@ -124,14 +127,13 @@ if __name__ == '__main__':
                 base_file = f[:-4]
                 path = os.path.join(root, f)
                 annotation = recognize(path)
-                writer.write(os.path.join(result_file, base_file+'.ann'), annotation)
+                writer.write(os.path.join(result_file, base_file + '.ann'), annotation)
 
     elif os.path.isfile(text_path):
         if text_path.endswith('.txt'):
             # filepath ends with .txt
             base_file = os.path.basename(text_path)[:-4]
             annotation = recognize(text_path)
-            annotation = Annotation()
             writer.write(result_file, annotation)
         else:
             print('filename must ends with .txt')
