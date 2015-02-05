@@ -1,7 +1,7 @@
 # disease-mention-recognition
 Corpus: http://annotation.dbi.udel.edu/text_mining/corpus/#/NCBI_disease/
 
-Run `source env/bin/activate before running the following command`
+Run `source env/bin/activate` before running the following commands
 
 Train a model:
 ```
@@ -36,17 +36,19 @@ avg / total    |   0.85  |    0.83 |     0.84  |    2048 |
 
 
 Mention level evaluation on dev and test set
-```
-DEV set:
-all entities: 781
-level      precision  recall       f1-score
-mention    0.82       0.81             0.82
-ending     0.91       0.91             0.91
 
-TEST set:
-all entities: 955
-level      precision  recall       f1-score
-mention    0.83       0.78             0.80
-ending     0.91       0.85             0.88
+DEV set entity number: 781
+
+level  |    precision | recall   |    f1-score |
+-------|--------------|----------|-------------|
+exact  |  0.82   |    0.81       |      0.82 |
+ending |    0.91 |      0.91     |        0.91 |
+
+TEST set entity number: 955
+
+level  |    precision | recall   |    f1-score |
+-------|--------------|----------|-------------|
+exact  |  0.83   |    0.78       |      0.80 |
+ending |    0.91 |      0.85     |        0.88 |
 
 ```
