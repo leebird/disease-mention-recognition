@@ -6,10 +6,10 @@ import nltk.data
 import os
 import sys
 from nltk.tokenize import WordPunctTokenizer
-
+import leveldb
+import re
 
 def ann_to_bio(corpus, bio_file):
-
     def get_bio_tag(index, entities):
         # get bio tag based on the start index
         for entity in entities:
@@ -19,8 +19,16 @@ def ann_to_bio(corpus, bio_file):
                 return 'I'
         return 'O'
 
+    # db and regex
+    atom_db = leveldb.LevelDB('data/atom_db')
+    upper_number = re.compile(r'^[A-Z]+[0-9]+[A-Z]*$')
+    punctuation = re.compile(r'^[^A-Za-z0-9]+$')
+
     # sequence output template
-    template = '{0}\t{1}\t{2}\n'
+    template = '{token}\t{pos}\t{pos_2}\t{lower}\t{is_upper}\t' \
+               '{is_title}\t{is_first}\t{is_digit}\t{is_punkt}\t' \
+               '{is_upper_number}\t{suffix_3}\t{suffix_2}\t{prefix_3}\t{prefix_2}\t' \
+               '{in_db}\t{label}\n'
 
     # sentence splitter
     sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -53,7 +61,7 @@ def ann_to_bio(corpus, bio_file):
                 # get pos tag
                 pos_tags = nltk.pos_tag(tokens)
 
-                for pos_tag in pos_tags:
+                for i, pos_tag in enumerate(pos_tags):
                     token, pos = pos_tag
                     index = text.find(token, index)
 
@@ -61,7 +69,26 @@ def ann_to_bio(corpus, bio_file):
                         raise Exception
                     # get bio tag
                     bio_tag = get_bio_tag(index, entities)
-                    bio_file_handler.write(template.format(token, pos, bio_tag))
+
+                    try:
+                        atom_db.Get(token.lower().encode('utf-8'))
+                        in_db = True
+                    except KeyError:
+                        in_db = False
+                    
+                    is_upper_number = False if upper_number.match(token) is None else True
+                    is_punctuation = False if punctuation.match(token) is None else True
+
+                    bio_file_handler.write(template.format(token=token, pos=pos,
+                                                           pos_2=pos[:2], lower=token.lower(),
+                                                           is_upper=token.isupper(), is_title=token.istitle(),
+                                                           is_first=(i == 0),
+                                                           is_digit=token.isdigit(), is_punkt=is_punctuation,
+                                                           is_upper_number=is_upper_number,
+                                                           suffix_3=token[-3:], suffix_2=token[-2:],
+                                                           prefix_3=token[:3], prefix_2=token[:2],
+                                                           in_db=in_db,
+                                                           label=bio_tag))
                     index += len(token)
 
                 # add a newline to separate sentence
@@ -69,9 +96,11 @@ def ann_to_bio(corpus, bio_file):
 
     bio_file_handler.close()
 
+
 if __name__ == '__main__':
 
     nltk.data.path = ['data']
+    
 
     if len(sys.argv) < 3:
         print('specify ann folder and BIO file')

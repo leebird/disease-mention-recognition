@@ -1,9 +1,10 @@
 from annotation.readers import AnnReader
 import sys
 
+
 class Evaluation(object):
     def __init__(self):
-        #TODO: integrate into Annotation
+        # TODO: integrate into Annotation
         pass
 
     @classmethod
@@ -20,9 +21,9 @@ class Evaluation(object):
         fp = len(user_set - golden_set)
         fn = len(golden_set - user_set)
 
-        precision = tp * 1.0 / (tp + fp)
-        recall = tp * 1.0 / (tp + fn)
-        fscore = 2 * precision * recall / (precision + recall)
+        precision = tp * 1.0 / (tp + fp) if tp + fp > 0 else 0
+        recall = tp * 1.0 / (tp + fn) if tp + fp > 0 else 0
+        fscore = 2 * precision * recall / (precision + recall) if precision + recall > 0 else 0
 
         print('all entities:', golden_num)
         # print('precision:', precision)
@@ -40,7 +41,7 @@ class Evaluation(object):
         # print()
         # print('FP:')
         # for t in sorted(user_set - golden_set, key=lambda a: a[0]):
-        #     print(t)
+        # print(t)
         #
         # print()
         # print('FN:')
@@ -76,7 +77,7 @@ class Evaluation(object):
                 # TODO: remove this assignment
                 # NCBI corpus has several classes of disease mentions,
                 # change all of them to "Disease" for evaluation
-                entity.category = 'Disease'
+                # entity.category = 'Disease'
                 if level == 'mention' or level == 'ending':
                     golden_entities.add((pmid,
                                          entity.category,
@@ -104,9 +105,9 @@ class Evaluation(object):
                             break
                     if not found:
                         user_entities.add((pmid,
-                                           entity.category, 
-                                           entity.start, 
-                                           entity.end, 
+                                           entity.category,
+                                           entity.start,
+                                           entity.end,
                                            entity.text))
 
                 elif level == 'mention':

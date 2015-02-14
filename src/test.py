@@ -2,6 +2,7 @@ import pycrfsuite
 from .utils import sent2features, sent2labels, bio_classification_report, get_sentences, sent2tokens
 import sys
 import os
+from annotation.utils import FileProcessor
 
 root = os.path.dirname(os.path.dirname(__file__))
 legonlp = os.path.join(root, 'data/legonlp-master')
@@ -23,12 +24,13 @@ def print_state_features(state_features):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
-        print('specify BIO file and model name')
+    if len(sys.argv) < 4:
+        print('specify BIO file, model name and output file')
         sys.exit(0)
 
     bio_file = sys.argv[1]
     model_file = sys.argv[2]
+    output_file = sys.argv[3]
 
     tagger = pycrfsuite.Tagger()
     tagger.open(model_file)
@@ -48,7 +50,9 @@ if __name__ == '__main__':
         for token, label in zip(tokens, labels):
             bio_lines.append(token + '\t' + label + '\n')
         bio_lines.append('\n')
-
+    
+    FileProcessor.write_file(output_file, ''.join(bio_lines))
+    
     user_annotation = bio_to_ann(bio_lines, 'Disease')
     with open(bio_file, 'r') as bio_file_handler:
         golden_annotation = bio_to_ann(bio_file_handler, 'Disease')
