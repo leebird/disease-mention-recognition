@@ -31,7 +31,7 @@ class Evaluation(object):
         # print('f-score:', fscore)
 
         print("%-10s %-10s %-10s %10s" % ('level', 'precision', 'recall', 'f1-score'))
-        print("%-10s %-10.2f %-10.2f %10.2f" % (level, precision, recall, fscore))
+        print("%-10s %-10.4f %-10.4f %10.4f" % (level, precision, recall, fscore))
 
         # print()
         # print('TP:')

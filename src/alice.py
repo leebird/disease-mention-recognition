@@ -13,6 +13,7 @@ from annotation.utils import FileProcessor
 import time
 import leveldb
 
+
 class Allie(object):
     def __init__(self):
         # https://fedorahosted.org/suds/wiki/Documentation#FIXINGBROKENSCHEMAs
@@ -32,9 +33,10 @@ class Allie(object):
         return shortforms
         # print("PairInfo["+str(pair.pair_id)+"|"+str(pair.abbreviation)+"|"+str(pair.long_form)+"]")
 
+
 class AllieLocal(object):
     def __init__(self):
-        self.db = leveldb.LevelDB('/home/leebird/Projects/disease/data/allie_db')
+        self.db = leveldb.LevelDB('/home/leebird/Projects/disease-mention-recognition/data/allie_db')
 
     def match_by_longform(self, longform):
         try:
@@ -43,6 +45,7 @@ class AllieLocal(object):
             return shortforms
         except KeyError:
             return []
+
 
 class PostProcessor(object):
     def __init__(self):
@@ -96,7 +99,6 @@ class PostProcessor(object):
         for entity in annotation.entities:
             if entity.end == end:
                 return entity.text
-        return False
 
     def is_shortform_disease(self, annotation, start, end):
         for entity in annotation.entities:
@@ -116,13 +118,13 @@ class PostProcessor(object):
         for match in matches:
             start = match.start()
             end = match.end()
-            if start > 0 and annotation.text[start - 1] != ' ':
+            if start > 0 and annotation.text[start - 1] != ' ' and annotation.text[start - 1] != '(':
                 continue
-            if end < len(annotation.text) and annotation.text[end] != ' ':
+            if end < len(annotation.text) and annotation.text[end] != ' ' and annotation.text[end] != ')':
                 continue
             if not self.is_overlap(annotation, start, end):
-                print('adding new entity')
-                annotation.add_entity('Disease', start, end, acronym)
+                entity = annotation.add_entity('Disease', start, end, acronym)
+                print('adding new entity '+ str(entity))
 
     def remove_all_shortforms(self, annotation, acronym):
         to_remove = []
@@ -142,32 +144,37 @@ class PostProcessor(object):
             # sentences = self.sent_detector.tokenize(annotation.text)
             # sent_offset = 0
             # for sentence in sentences:
-            
+
             text = annotation.text
             in_paren = self.pattern.finditer(text)
             for match in in_paren:
                 acronym = match.group(1).strip()
+                acronym_pured = acronym.replace('- ','-').replace(' -','-').lower()
                 start = match.start(0)
                 end = match.end(0)
                 is_sf_disease = self.is_shortform_disease(annotation, start, end)
 
-                longform_end = self.get_longform_end(text, start-1)
+                longform_end = self.get_longform_end(text, start - 1)
                 is_lf_disease = self.is_longform_disease(annotation, longform_end)
 
                 if is_lf_disease and is_sf_disease:
-                    print(pmid+'\tboth true: ' + is_lf_disease + '\t' + acronym)
-                    self.mark_all_shortforms(annotation, acronym)
-
-                if not is_sf_disease and is_lf_disease:
-                    print(pmid+'\tlf but not sf: ' + is_lf_disease + '\t' + acronym)
+                    print(pmid + '\tboth true: ' + is_lf_disease + '\t' + acronym)
                     lf_tokens = is_lf_disease.lower().split()
                     shortforms = self.get_shortforms(lf_tokens)
-                    if acronym.lower() in shortforms:
-                        self.mark_all_shortforms(annotation, acronym)
+                    if acronym_pured.lower() in shortforms:
+                        self.mark_all_shortforms(annotation, acronym.strip())
+
+                if not is_sf_disease and is_lf_disease:
+                    print(pmid + '\tlf but not sf: ' + is_lf_disease + '\t' + acronym)
+                    lf_tokens = is_lf_disease.lower().split()
+                    shortforms = self.get_shortforms(lf_tokens)
+                    if acronym_pured.lower() in shortforms:
+                        self.mark_all_shortforms(annotation, acronym.strip())
 
                 if is_sf_disease and not is_lf_disease:
-                    print(pmid+'\tsf but not lf: ' + str(is_lf_disease) + '\t' + acronym)
-                    self.remove_all_shortforms(annotation, acronym)
+                    print(pmid + '\tsf but not lf: ' + str(is_lf_disease) + '\t' + acronym)
+                    self.remove_all_shortforms(annotation, acronym.strip())
+
 
 if __name__ == '__main__':
     # allie = Allie()
