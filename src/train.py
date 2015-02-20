@@ -26,7 +26,7 @@ if __name__ == '__main__':
     trainer.set_params({
         'c1': 1.0,  # coefficient for L1 penalty
         'c2': 1e-3,  # coefficient for L2 penalty
-        'max_iterations': 70,  # stop earlier
+        'max_iterations': 60,  # stop earlier
     
         # include transitions that are possible, but not observed
         'feature.possible_transitions': False

@@ -3,6 +3,7 @@ from .utils import sent2features, sent2labels, bio_classification_report, get_se
 import sys
 import os
 from annotation.utils import FileProcessor
+from .alice import PostProcessor
 
 root = os.path.dirname(os.path.dirname(__file__))
 legonlp = os.path.join(root, 'data/legonlp-master')
@@ -27,6 +28,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 4:
         print('specify BIO file, model name and output file')
         sys.exit(0)
+
+    pp = PostProcessor()
 
     bio_file = sys.argv[1]
     model_file = sys.argv[2]
@@ -54,6 +57,10 @@ if __name__ == '__main__':
     FileProcessor.write_file(output_file, ''.join(bio_lines))
     
     user_annotation = bio_to_ann(bio_lines, 'Disease')
+    
+    # post-processing for longform (shortform)
+    pp.process({'test': user_annotation})
+    
     with open(bio_file, 'r') as bio_file_handler:
         golden_annotation = bio_to_ann(bio_file_handler, 'Disease')
         Evaluation.evaluate({'test': user_annotation}, {'test': golden_annotation}, 'mention')
